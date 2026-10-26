@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تطبيق السعرات والماكروز والوزن</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Tajawal', sans-serif; }
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen pb-20">
+    
+    <!-- Header / Navigation Bar -->
+    <div class="max-w-md mx-auto px-4 pt-6 space-y-5">
+        <header class="text-center space-y-1">
+            <h1 class="text-2xl font-extrabold tracking-tight text-emerald-400">حاسبة السعرات والماكروز</h1>
+            <p class="text-xs text-slate-400">تحكم بهدفك وتابع يومك بكل ثقة</p>
+        </header>
+
+        <!-- Navigation Tabs -->
+        <div class="flex bg-slate-800 p-1 rounded-2xl border border-slate-700/60 shadow-md">
+            <button onclick="switchTab('home')" id="tab-home" class="flex-1 py-2.5 text-xs font-bold rounded-xl transition-all bg-emerald-500 text-slate-950 shadow">📊 يومياتي</button>
+            <button onclick="switchTab('settings')" id="tab-settings" class="flex-1 py-2.5 text-xs font-bold rounded-xl transition-all text-slate-400 hover:text-slate-200">⚙️ الإعدادات والهدف</button>
+        </div>
+
+        <!-- PAGE 1: HOME (اليوميات) -->
+        <div id="page-home" class="space-y-4">
+            <!-- Streak Card -->
+            <div class="bg-slate-800/80 border border-slate-700/60 rounded-2xl p-4 flex items-center justify-between shadow-lg">
+                <div>
+                    <span class="text-xs text-slate-400 block">سجل الالتزام المتواصل</span>
+                    <span id="streak-count" class="text-2xl font-black text-amber-400">0 أيام</span>
+                </div>
+                <div class="bg-amber-400/10 p-3 rounded-xl text-amber-400 text-xl">🔥</div>
+            </div>
+
+            <!-- Progress Summary -->
+            <div class="bg-slate-800/80 border border-slate-700/60 rounded-2xl p-4 space-y-3 shadow-lg">
+                <div class="flex justify-between items-center text-sm">
+                    <span class="text-slate-300 font-medium">إجمالي السعرات</span>
+                    <span id="calories-text" class="font-bold text-emerald-400">0 / 2000 سعرة</span>
+                </div>
+                <div class="w-full bg-slate-700 h-3 rounded-full overflow-hidden">
+                    <div id="progress-bar" class="bg-emerald-500 h-full w-0 transition-all duration-300"></div>
+                </div>
+                <div class="grid grid-cols-3 gap-2 pt-2 text-center text-xs border-t border-slate-700/50">
+                    <div class="bg-slate-900/50 p-2 rounded-xl">
+                        <span class="text-slate-400 block text-[10px]">بروتين</span>
+                        <span id="protein-text" class="font-bold text-blue-400">0 / 150 جم</span>
+                    </div>
+                    <div class="bg-slate-900/50 p-2 rounded-xl">
+                        <span class="text-slate-400 block text-[10px]">كارب</span>
+                        <span id="carbs-text" class="font-bold text-amber-400">0 / 200 جم</span>
+                    </div>
+                    <div class="bg-slate-900/50 p-2 rounded-xl">
+                        <span class="text-slate-400 block text-[10px]">دهون</span>
+                        <span id="fats-text" class="font-bold text-rose-400">0 / 65 جم</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Water Tracker -->
+            <div class="bg-slate-800/80 border border-slate-700/60 rounded-2xl p-4 flex items-center justify-between shadow-lg">
+                <div>
+                    <span class="text-xs text-slate-400 block">متابعة شرب الماء 💧</span>
+                    <span id="water-text" class="text-lg font-bold text-cyan-400">0.0 / 3.0 لتر</span>
+                </div>
+                <div class="flex space-x-2 space-x-reverse">
+                    <button onclick="addWater(0.25)" class="bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 px-3 py-1.5 rounded-xl text-xs font-bold border border-cyan-500/30">+ ربع لتر</button>
+                    <button onclick="resetWater()" class="bg-slate-700 hover:bg-slate-600 text-slate-300 px-2.5 py-1.5 rounded-xl text-xs">إعادة</button>
+                </div>
+            </div>
+
+            <!-- Add Food Form -->
+            <div class="bg-slate-800/80 border border-slate-700/60 rounded-2xl p-4 space-y-3 shadow-lg">
+                <h2 class="text-sm font-bold text-slate-200">إضافة وجبة جديدة</h2>
+                <div class="space-y-2">
+                    <input type="text" id="food-name" placeholder="اسم الوجبة (مثال: وجبة غداء)" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-500">
+                    <div class="grid grid-cols-2 gap-2">
+                        <input type="number" id="food-calories" placeholder="السعرات الحرارية" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-500">
+                        <input type="number" id="food-protein" placeholder="البروتين (جم)" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-500">
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <input type="number" id="food-carbs" placeholder="الكارب (جم)" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-500">
+                        <input type="number" id="food-fats" placeholder="الدهون (جم)" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-500">
+                    </div>
+                    <button onclick="addFood()" class="w-full bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold py-2.5 rounded-xl transition-all shadow-md text-sm">إضافة للوجبات</button>
+                </div>
+            </div>
+
+            <!-- Food List -->
+            <div class="bg-slate-800/80 border border-slate-700/60 rounded-2xl p-4 space-y-3 shadow-lg">
+                <h2 class="text-sm font-bold text-slate-200">وجبات اليوم</h2>
+                <div id="food-list" class="space-y-2 max-h-48 overflow-y-auto">
+                    <p class="text-xs text-slate-500 text-center py-4">لا توجد وجبات مسجلة اليوم</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- PAGE 2: SETTINGS & GOALS (الإعدادات والهدف والوزن) -->
+        <div id="page-settings" class="space-y-4 hidden">
+            <!-- Body Stats (Weight & Height) -->
+            <div class="bg-slate-800/80 border border-slate-700/60 rounded-2xl p-4 space-y-3 shadow-lg">
+                <h2 class="text-sm font-bold text-slate-200">مقاسات الجسم والوزن الحافز ⚖️</h2>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="text-[10px] text-slate-400 block mb-1">الوزن الحالي (كجم)</label>
+                        <input type="number" id="body-weight" value="75" onchange="updateProfile()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-500">
+                    </div>
+                    <div>
+                        <label class="text-[10px] text-slate-400 block mb-1">الطول (سم)</label>
+                        <input type="number" id="body-height" value="175" onchange="updateProfile()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-500">
+                    </div>
+                </div>
+                <p class="text-[11px] text-emerald-400 text-center pt-1" id="weight-motivation">استمر في التحدي، كل خطوة تقربك لهدفك! 💪</p>
+            </div>
+
+            <!-- Custom Goals Settings -->
+            <div class="bg-slate-800/80 border border-slate-700/60 rounded-2xl p-4 space-y-3 shadow-lg">
+                <h2 class="text-sm font-bold text-slate-200">تحديد أهدافك الخاصة يدوياً 🎯</h2>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="text-[10px] text-slate-400 block mb-1">السعرات المستهدفة</label>
+                        <input type="number" id="goal-calories" value="2000" onchange="updateGoals()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-500">
+                    </div>
+                    <div>
+                        <label class="text-[10px] text-slate-400 block mb-1">البروتين (جرام)</label>
+                        <input type="number" id="goal-protein" value="150" onchange="updateGoals()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-500">
+                    </div>
+                    <div>
+                        <label class="text-[10px] text-slate-400 block mb-1">الكارب (جرام)</label>
+                        <input type="number" id="goal-carbs" value="200" onchange="updateGoals()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-500">
+                    </div>
+                    <div>
+                        <label class="text-[10px] text-slate-400 block mb-1">الدهون (جرام)</label>
+                        <input type="number" id="goal-fats" value="65" onchange="updateGoals()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-500">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Logic -->
+    <script>
+        let goals = { calories: 2000, protein: 150, carbs: 200, fats: 65 };
+        let profile = { weight: 75, height: 175 };
+        let current = { calories: 0, protein: 0, carbs: 0, fats: 0 };
+        let water = 0.0;
+        let streak = 0;
+        let foods = [];
+
+        function switchTab(tab) {
+            const homeTab = document.getElementById('tab-home');
+            const settingsTab = document.getElementById('tab-settings');
+            const homePage = document.getElementById('page-home');
+            const settingsPage = document.getElementById('page-settings');
+
+            if (tab === 'home') {
+                homeTab.className = "flex-1 py-2.5 text-xs font-bold rounded-xl transition-all bg-emerald-500 text-slate-950 shadow";
+                settingsTab.className = "flex-1 py-2.5 text-xs font-bold rounded-xl transition-all text-slate-400 hover:text-slate-200";
+                homePage.classList.remove('hidden');
+                settingsPage.classList.add('hidden');
+            } else {
+                settingsTab.className = "flex-1 py-2.5 text-xs font-bold rounded-xl transition-all bg-emerald-500 text-slate-950 shadow";
+                homeTab.className = "flex-1 py-2.5 text-xs font-bold rounded-xl transition-all text-slate-400 hover:text-slate-200";
+                settingsPage.classList.remove('hidden');
+                homePage.classList.add('hidden');
+            }
+        }
+
+        function loadData() {
+            const savedData = localStorage.getItem('proCalorieAppData');
+            if (savedData) {
+                const data = JSON.parse(savedData);
+                goals = data.goals || goals;
+                profile = data.profile || profile;
+                current = data.current || current;
+                water = data.water || 0.0;
+                streak = data.streak || 0;
+                foods = data.foods || [];
+                
+                document.getElementById('goal-calories').value = goals.calories;
+                document.getElementById('goal-protein').value = goals.protein;
+                document.getElementById('goal-carbs').value = goals.carbs;
+                document.getElementById('goal-fats').value = goals.fats;
+                document.getElementById('body-weight').value = profile.weight;
+                document.getElementById('body-height').value = profile.height;
+                
+                updateUI();
+            }
+        }
+
+        function saveData() {
+            localStorage.setItem('proCalorieAppData', JSON.stringify({ goals, profile, current, water, streak, foods }));
+        }
+
+        function updateGoals() {
+            goals.calories = parseInt(document.getElementById('goal-calories').value) || 2000;
+            goals.protein = parseInt(document.getElementById('goal-protein').value) || 150;
+            goals.carbs = parseInt(document.getElementById('goal-carbs').value) || 200;
+            goals.fats = parseInt(document.getElementById('goal-fats').value) || 65;
+            saveData();
+            updateUI();
+        }
+
+        function updateProfile() {
+            profile.weight = parseFloat(document.getElementById('body-weight').value) || 75;
+            profile.height = parseFloat(document.getElementById('body-height').value) || 175;
+            saveData();
+        }
+
+        function addWater(amount) {
+            water = Math.min(water + amount, 5.0);
+            saveData();
+            updateUI();
+        }
+
+        function resetWater() {
+            water = 0.0;
+            saveData();
+            updateUI();
+        }
+
+        function addFood() {
+            const name = document.getElementById('food-name').value.trim();
+            const cal = parseInt(document.getElementById('food-calories').value) || 0;
+            const pro = parseInt(document.getElementById('food-protein').value) || 0;
+            const carb = parseInt(document.getElementById('food-carbs').value) || 0;
+            const fat = parseInt(document.getElementById('food-fats').value) || 0;
+
+            if (!name || cal <= 0) return;
+
+            foods.push({ name, calories: cal, protein: pro, carbs: carb, fats: fat });
+            current.calories += cal;
+            current.protein += pro;
+            current.carbs += carb;
+            current.fats += fat;
+            
+            if (streak === 0) streak = 1;
+
+            document.getElementById('food-name').value = '';
+            document.getElementById('food-calories').value = '';
+            document.getElementById('food-protein').value = '';
+            document.getElementById('food-carbs').value = '';
+            document.getElementById('food-fats').value = '';
+
+            saveData();
+            updateUI();
+        }
+
+        function updateUI() {
+            document.getElementById('calories-text').innerText = `${current.calories} / ${goals.calories} سعرة`;
+            document.getElementById('protein-text').innerText = `${current.protein} / ${goals.protein} جم`;
+            document.getElementById('carbs-text').innerText = `${current.carbs} / ${goals.carbs} جم`;
+            document.getElementById('fats-text').innerText = `${current.fats} / ${goals.fats} جم`;
+            document.getElementById('streak-count').innerText = `${streak} أيام`;
+            document.getElementById('water-text').innerText = `${water.toFixed(2)} / 3.0 لتر`;
+            
+            let percent = Math.min((current.calories / goals.calories) * 100, 100);
+            document.getElementById('progress-bar').style.width = `${percent}%`;
+
+            const listContainer = document.getElementById('food-list');
+            if (foods.length === 0) {
+                listContainer.innerHTML = '<p class="text-xs text-slate-500 text-center py-4">لا توجد وجبات مسجلة اليوم</p>';
+                return;
+            }
+
+            listContainer.innerHTML = foods.map((f, index) => `
+                <div class="flex justify-between items-center bg-slate-900/60 p-2.5 rounded-xl border border-slate-700/40 text-sm">
+                    <div>
+                        <span class="font-medium text-slate-200 block">${f.name}</span>
+                        <span class="text-[10px] text-slate-400">بروتين: ${f.protein}ج | كارب: ${f.carbs}ج | دهون: ${f.fats}ج</span>
+                    </div>
+                    <div class="flex items-center space-x-3 space-x-reverse">
+                        <span class="text-emerald-400 font-bold">${f.calories} سعرة</span>
+                        <button onclick="deleteFood(${index})" class="text-rose-400 hover:text-rose-300 text-xs font-bold">حذف</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function deleteFood(index) {
+            current.calories -= foods[index].calories;
+            current.protein -= foods[index].protein;
+            current.carbs -= foods[index].carbs;
+            current.fats -= foods[index].fats;
+            
+            foods.splice(index, 1);
+            saveData();
+            updateUI();
+        }
+
+        loadData();
+    </script>
+</body>
+</html>
